@@ -659,45 +659,143 @@ Resources:
         <!doctype html>
         <html lang="en">
         <head>
-          <!-- Required meta tags -->
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-          <!-- Bootstrap CSS -->
-          <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+          <title>AWS Marketplace Registration</title>
+          <!-- Cloudscape Design -->
+          <link rel="stylesheet" href="https://cloudscape.design/styles.min.css">
           <link rel="stylesheet" href="style.css">
-          <title>Registration page</title>
+          <script src="https://cloudscape.design/index.js"></script>
         </head>
-        <body class="text-center">
-          <div class="container">
+        <body>
+          <div class="custom-container">
             <div id="alert"></div>
-            <form class="form-signin" method="POST" enctype="multipart/form-data">
-              <img class="mb-4" src="logo.png" alt="" width="72" height="72">
-              <h1 class="h3 mb-3 font-weight-normal">Please enter your contact details</h1>
-              <label for="companyName" class="sr-only">Company name</label>
-              <input type="text" name="companyName" class="form-control" placeholder="Company name" required autofocus>
-              <label for="contactPerson" class="sr-only">Contact person</label>
-              <input type="text" name="contactPerson" class="form-control" placeholder="Contact person" required autofocus>
-              <label for="Contact phone" class="sr-only">Contact phone</label>
-              <input type="tel" name="contactPhone" class="form-control" placeholder="Contact phone" required autofocus>
-              <label for="contactEmail" class="sr-only">Email address</label>
-              <input type="email" name="contactEmail" class="form-control" placeholder="Email address" required autofocus>
-              <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
-              <p class="mt-5 mb-3 text-muted">&copy; 2024</p>
-            </form>
+            <awsui-container>
+              <awsui-header variant="h1">AWS Marketplace Registration</awsui-header>
+              <div id="registration-form" class="registration-form">
+                <awsui-form>
+                  <awsui-form-field
+                    label="Company Name"
+                    description="Enter your organization name"
+                  >
+                    <awsui-input
+                      name="companyName"
+                      placeholder="Enter company name"
+                      required
+                    ></awsui-input>
+                  </awsui-form-field>
+
+                  <awsui-form-field
+                    label="Contact Person"
+                    description="Full name of primary contact"
+                  >
+                    <awsui-input
+                      name="contactPerson"
+                      placeholder="Enter contact person"
+                      required
+                    ></awsui-input>
+                  </awsui-form-field>
+
+                  <awsui-form-field
+                    label="Contact Phone"
+                    description="Phone number for primary contact"
+                  >
+                    <awsui-input
+                      name="contactPhone"
+                      type="tel"
+                      placeholder="Enter phone number"
+                      required
+                    ></awsui-input>
+                  </awsui-form-field>
+
+                  <awsui-form-field
+                    label="Email Address"
+                    description="Business email for notifications"
+                  >
+                    <awsui-input
+                      name="contactEmail"
+                      type="email"
+                      placeholder="Enter email address"
+                      required
+                    ></awsui-input>
+                  </awsui-form-field>
+
+                  <awsui-button variant="primary" id="submit-button">
+                    Complete Registration
+                  </awsui-button>
+                </awsui-form>
+              </div>
+            </awsui-container>
           </div>
-          <!-- Optional JavaScript -->
-          <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-          <script src="https://code.jquery.com/jquery-3.7.0.min.js"
-            integrity="sha384-NXgwF8Kv9SSAr+jemKKcbvQsz+teULH/a5UNJvZc6kP47hZgl62M1vGnw6gHQhb1"
-            crossorigin="anonymous"></script>
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-            crossorigin="anonymous"></script>
-          <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-            crossorigin="anonymous"></script>
-          <script src="/script.js"></script>
+          
+          <script>
+            function showAlert(type, message) {
+              const alert = document.createElement('awsui-alert');
+              alert.setAttribute('type', type);
+              alert.setAttribute('header', type === 'success' ? 'Success' : 'Error');
+              alert.textContent = message;
+              
+              const alertContainer = document.getElementById('alert');
+              alertContainer.innerHTML = '';
+              alertContainer.appendChild(alert);
+            }
+
+            function getUrlParameter(name) {
+              name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+              const regex = new RegExp(`[\\?&]${name}=([^&#]*)`);
+              const results = regex.exec(location.search);
+              return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+            }
+
+            async function handleSubmit(event) {
+              event.preventDefault();
+              const regToken = getUrlParameter('x-amzn-marketplace-token');
+              
+              if (!regToken) {
+                showAlert('error', 'Registration Token Missing. Please subscribe through AWS Marketplace first.');
+                return;
+              }
+
+              const form = document.querySelector('awsui-form');
+              const formData = {
+                companyName: form.querySelector('[name="companyName"]').value,
+                contactPerson: form.querySelector('[name="contactPerson"]').value,
+                contactPhone: form.querySelector('[name="contactPhone"]').value,
+                contactEmail: form.querySelector('[name="contactEmail"]').value,
+                regToken
+              };
+
+              try {
+                const response = await fetch('/subscriber', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(formData)
+                });
+
+                const result = await response.text();
+                
+                if (response.ok) {
+                  showAlert('success', result);
+                  form.reset();
+                } else {
+                  showAlert('error', result || 'Registration failed. Please try again.');
+                }
+              } catch (error) {
+                showAlert('error', 'An error occurred. Please try again later.');
+                console.error('Error:', error);
+              }
+            }
+
+            document.getElementById('submit-button').addEventListener('click', handleSubmit);
+
+            // Check for registration token on load
+            const regToken = getUrlParameter('x-amzn-marketplace-token');
+            if (!regToken) {
+              showAlert('error', 'Registration Token Missing. Please subscribe through AWS Marketplace first.');
+            }
+          </script>
         </body>
         </html>
 
@@ -710,53 +808,84 @@ Resources:
       Key: script.js
       ContentType: "text/javascript"
       Body: |
-        const form = document.getElementsByClassName('form-signin')[0];
-        const showAlert = (cssClass, message) => {
-          const html = `
-            <div class="alert alert-${cssClass} alert-dismissible" role="alert">
-                <strong>${message}</strong>
-                <button class="close" type="button" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>`;
-          document.querySelector('#alert').innerHTML += html;
+        // Form handling
+        const form = document.querySelector('awsui-form');
+        
+        const showAlert = (type, message) => {
+          const alert = document.createElement('awsui-alert');
+          alert.setAttribute('type', type === 'success' ? 'success' : 'error');
+          alert.setAttribute('header', type === 'success' ? 'Success' : 'Error');
+          alert.textContent = message;
+          
+          const alertContainer = document.querySelector('#alert');
+          alertContainer.innerHTML = '';
+          alertContainer.appendChild(alert);
         };
-        const formToJSON = (elements) => [].reduce.call(elements, (data, element) => {
-          data[element.name] = element.value;
+
+        const formToJSON = (form) => {
+          const data = {};
+          form.querySelectorAll('awsui-input').forEach(input => {
+            data[input.getAttribute('name')] = input.value;
+          });
           return data;
-        }, {});
+        };
+
         const getUrlParameter = (name) => {
           name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
           const regex = new RegExp(`[\\?&]${name}=([^&#]*)`);
           const results = regex.exec(location.search);
           return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         };
-        const handleFormSubmit = (event) => {
+
+        const handleFormSubmit = async (event) => {
           event.preventDefault();
-          const postUrl = `/subscriber`;
+          const submitButton = document.querySelector('#submit-button');
+          submitButton.loading = true;
+
           const regToken = getUrlParameter('x-amzn-marketplace-token');
           if (!regToken) {
-            showAlert('danger',
+            showAlert('error',
               'Registration Token Missing. Please go to AWS Marketplace and follow the instructions to set up your account!');
-          } else {
-            const data = formToJSON(form.elements);
-            data.regToken = regToken;
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', postUrl, true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify(data));
-            xhr.onreadystatechange = () => {
-              if (xhr.readyState == XMLHttpRequest.DONE) {
-                showAlert('primary', xhr.responseText);
-                console.log(JSON.stringify(xhr.responseText));
-              }
-            };
+            submitButton.loading = false;
+            return;
+          }
+
+          try {
+            const formData = formToJSON(form);
+            formData.regToken = regToken;
+
+            const response = await fetch('/subscriber', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(formData)
+            });
+
+            const text = await response.text();
+            if (response.ok) {
+              showAlert('success', text);
+              form.reset();
+            } else {
+              showAlert('error', text || 'Registration failed. Please try again.');
+            }
+          } catch (error) {
+            console.error('Registration error:', error);
+            showAlert('error', 'An error occurred during registration. Please try again.');
+          } finally {
+            submitButton.loading = false;
           }
         };
-        form.addEventListener('submit', handleFormSubmit);
+
+        // Event listeners
+        document.querySelector('#submit-button')
+          .addEventListener('click', handleFormSubmit);
+
+        // Initial token check
         const regToken = getUrlParameter('x-amzn-marketplace-token');
         if (!regToken) {
-          showAlert('danger', 'Registration Token Missing. Please go to AWS Marketplace and follow the instructions to set up your account!');
+          showAlert('error', 
+            'Registration Token Missing. Please go to AWS Marketplace and follow the instructions to set up your account!');
         }
 
   S3ContentStyle:
@@ -768,61 +897,49 @@ Resources:
       Key: style.css
       ContentType: "text/css"
       Body: |
-        html,
+        :root {
+          --font-family-base: "Open Sans", "Helvetica Neue", Roboto, Arial, sans-serif;
+          --spacing-l: 24px;
+          --spacing-m: 16px;
+          --spacing-s: 8px;
+        }
+
         body {
-          height: 100%;
+          margin: 0;
+          padding: 0;
+          font-family: var(--font-family-base);
+          background-color: #f2f3f3;
         }
-        body {
-          display: -ms-flexbox;
-          display: flex;
-          -ms-flex-align: center;
-          align-items: center;
-          padding-top: 40px;
-          padding-bottom: 40px;
-          background-color: #f5f5f5;
+
+        .custom-container {
+          max-width: 800px;
+          margin: 40px auto;
+          padding: var(--spacing-l);
         }
-        .form-signin {
-          width: 100%;
-          max-width: 330px;
-          padding: 15px;
-          margin: auto;
+
+        .registration-form {
+          background-color: #ffffff;
+          padding: var(--spacing-l);
+          border-radius: 8px;
+          box-shadow: 0 1px 1px 0 rgba(0, 28, 36, 0.3);
+          margin-top: var(--spacing-l);
         }
-        .form-signin .checkbox {
-          font-weight: 400;
+
+        awsui-form-field {
+          margin-bottom: var(--spacing-m);
         }
-        .form-signin .form-control {
-          position: relative;
-          box-sizing: border-box;
-          height: auto;
-          padding: 10px;
-          font-size: 16px;
-          margin-top:5px;
+
+        awsui-button {
+          margin-top: var(--spacing-l);
         }
-        .form-signin .form-control:focus {
-          z-index: 2;
+
+        awsui-alert {
+          margin-bottom: var(--spacing-l);
         }
-        .form-signin input[type="email"] {
-          margin-bottom: -1px;
-          border-bottom-right-radius: 0;
-          border-bottom-left-radius: 0;
-        }
-        .form-signin input[type="password"] {
-          margin-bottom: 10px;
-          border-top-left-radius: 0;
-          border-top-right-radius: 0;
-        }
-        .bd-placeholder-img {
-          font-size: 1.125rem;
-          text-anchor: middle;
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-        }
-        @media (min-width: 768px) {
-          .bd-placeholder-img-lg {
-            font-size: 3.5rem;
-          }
+
+        .dark-mode {
+          background-color: #0f1b2a;
+          color: #d1d5db;
         }
   
   S3ContentLogo:
